@@ -1046,6 +1046,7 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
         // at 9, so 7 puts the burst origin just below them).
         burstTriggerPos.set(trigger.position.x, 7, trigger.position.z)
         discoveryBurst.burst(burstTriggerPos, monu.color)
+        districtLabels.markVisited(monu.key)
         callbacks.onMonumentEnter(monu)
       }
     }
