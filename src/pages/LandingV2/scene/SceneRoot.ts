@@ -26,6 +26,7 @@ import { createClouds } from './Clouds'
 import { createThoughtStream } from './ThoughtStream'
 import { createMotes } from './Motes'
 import { createWelcomeBillboard } from './Billboard'
+import { createRoadPulses } from './RoadPulses'
 import { createEasterEggs, type EasterEggHandle } from './EasterEggs'
 import { createFireworks, type FireworksHandle } from './Fireworks'
 
@@ -424,6 +425,14 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
   const welcomeBillboard = createWelcomeBillboard()
   scene.add(welcomeBillboard.group)
 
+  // ── Road pulses (Loop 6 polish) ──────────────────────────────────────
+  // Inward-flowing emissive dots along each highway. 6 per road × 8
+  // visible districts = 48 pulses traveling district → plaza on a 2.4s
+  // loop. Ground-level analog of the airborne thought-stream — both
+  // reinforce "everything flows toward MIND."
+  const roadPulses = createRoadPulses([...MONUMENTS, ...HIDDEN_DISTRICTS])
+  scene.add(roadPulses.group)
+
   // ── Walking NPCs in Agent Town (Wave 4 / D2 — vision § 3 D4) ────────
   // 6 low-poly biped agents loop simple waypoint paths around the Agent
   // Town plinth. They carry billboard speech bubbles that cycle between
@@ -745,6 +754,7 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
     thoughtStream.update(dt, time)
     motes.update(dt, time)
     welcomeBillboard.update(time)
+    roadPulses.update(time)
 
     // Easter-egg per-frame pulses (Achilles chest glyph + Founder Stone
     // inlay shimmer). Fires regardless of proximity so the eggs read
@@ -1101,6 +1111,7 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
     thoughtStream.dispose()
     motes.dispose()
     welcomeBillboard.dispose()
+    roadPulses.dispose()
     easterEggs.dispose()
     fireworks.dispose()
     npcs?.dispose()
