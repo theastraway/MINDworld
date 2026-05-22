@@ -62,6 +62,11 @@ export default function LandingV2() {
   const [activeMonument, setActiveMonument] = useState<Monument | null>(null)
   const [showIntro, setShowIntro] = useState(true)
   const [showControls, setShowControls] = useState(true)
+  // Mirror of boost ref into React state so we can animate a cinematic
+  // screen vignette during Shift-held boost without polling the ref
+  // from outside the animation loop. Updated by the same keydown/up
+  // handlers that flip boostRef.
+  const [boostActive, setBoostActive] = useState(false)
   const [discovered, setDiscovered] = useState<Set<string>>(new Set())
   const [webglError, setWebglError] = useState<string | null>(null)
   const [muted, setMuted] = useState(true)
@@ -331,8 +336,8 @@ export default function LandingV2() {
     // interpolation against the Sky module.
     const keyboard = attachKeyboardControls({
       onEscape: () => setActiveMonument(null),
-      onShiftDown: () => { boostRef.current = true },
-      onShiftUp: () => { boostRef.current = false },
+      onShiftDown: () => { boostRef.current = true; setBoostActive(true) },
+      onShiftUp: () => { boostRef.current = false; setBoostActive(false) },
       onKonami: () => {
         // Persist the unlock so the next visit boots into Atlas livery
         // by default, apply the skin immediately so the car visually
@@ -712,6 +717,19 @@ export default function LandingV2() {
 
       {/* Canvas mount */}
       <div ref={mountRef} className="absolute inset-0" aria-hidden="true" />
+
+      {/* Cinematic boost vignette — radial darkening from edges in, brand-
+          red tinted, fades in over 200ms while Shift is held. Pure visual
+          cue for speed. Pointer-events-none so it doesn't block input. */}
+      <div
+        className="absolute inset-0 z-10 pointer-events-none transition-opacity duration-200"
+        style={{
+          opacity: boostActive ? 1 : 0,
+          background:
+            'radial-gradient(ellipse at center, transparent 38%, rgba(244, 63, 63, 0.06) 65%, rgba(0, 0, 0, 0.45) 100%)',
+        }}
+        aria-hidden="true"
+      />
 
       {/* Branded loading screen — covers the scene until SceneRoot reports ready */}
       {loaderActive && <Loader progress={loadProgress} dismissing={loaderDismissing} />}
