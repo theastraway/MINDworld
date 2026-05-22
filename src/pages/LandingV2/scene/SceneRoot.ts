@@ -23,6 +23,7 @@ import { createEngine, type EngineHandle } from '../audio/Engine'
 import { createPostFX, type PostFXHandle } from './PostFX'
 import { createBeacons } from './Beacons'
 import { createClouds } from './Clouds'
+import { createThoughtStream } from './ThoughtStream'
 import { createEasterEggs, type EasterEggHandle } from './EasterEggs'
 import { createFireworks, type FireworksHandle } from './Fireworks'
 
@@ -400,6 +401,13 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
   const clouds = createClouds()
   scene.add(clouds.group)
 
+  // ── Thought-stream particles (Loop 3 polish) ──────────────────────
+  // Each district drips a slow stream of colored particles that arc
+  // toward the MIND Tower top. Visualizes "every capability feeds the
+  // memory layer" — the core MIND value prop, made spatial.
+  const thoughtStream = createThoughtStream([...MONUMENTS, ...HIDDEN_DISTRICTS])
+  scene.add(thoughtStream.points)
+
   // ── Walking NPCs in Agent Town (Wave 4 / D2 — vision § 3 D4) ────────
   // 6 low-poly biped agents loop simple waypoint paths around the Agent
   // Town plinth. They carry billboard speech bubbles that cycle between
@@ -718,6 +726,7 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
     // beacon per session when it first reaches full opacity.
     beacons.update(time, carBuild.group.position)
     clouds.update(dt)
+    thoughtStream.update(dt, time)
 
     // Easter-egg per-frame pulses (Achilles chest glyph + Founder Stone
     // inlay shimmer). Fires regardless of proximity so the eggs read
@@ -1071,6 +1080,7 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
     skids.dispose()
     beacons.dispose()
     clouds.dispose()
+    thoughtStream.dispose()
     easterEggs.dispose()
     fireworks.dispose()
     npcs?.dispose()
