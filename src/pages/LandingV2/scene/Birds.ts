@@ -33,7 +33,7 @@ export interface BirdsHandle {
 }
 
 interface Bird {
-  mesh: THREE.Mesh
+  mesh: THREE.Group
   centerX: number
   centerZ: number
   altitude: number
