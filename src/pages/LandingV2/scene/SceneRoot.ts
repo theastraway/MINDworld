@@ -1012,7 +1012,18 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
         camera.position.x += (Math.random() - 0.5) * intensity
         camera.position.y += (Math.random() - 0.5) * intensity
       }
-      const lookTarget = carBuild.group.position.clone().add(new THREE.Vector3(0, 1.5, 0))
+      // Look-ahead: shift the lookAt forward of the car when moving fast,
+      // so the camera anticipates the direction of travel. Reads as the
+      // car "leading the camera" — pure cinema. Speed factor caps at
+      // 0.6×velocity so high speeds don't yank the eye too far.
+      const forwardLook = Math.min(Math.abs(carState.velocity) * 0.55, 10)
+      const aheadOffset = new THREE.Vector3(0, 1.5, 0)
+      if (forwardLook > 0.1) {
+        const aheadVec = new THREE.Vector3(0, 0, 1).applyEuler(carBuild.group.rotation)
+        aheadVec.multiplyScalar(forwardLook * Math.sign(carState.velocity))
+        aheadOffset.add(aheadVec)
+      }
+      const lookTarget = carBuild.group.position.clone().add(aheadOffset)
       camera.lookAt(lookTarget)
     }
 
