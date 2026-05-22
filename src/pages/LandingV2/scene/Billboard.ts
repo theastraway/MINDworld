@@ -22,8 +22,13 @@ const SIGN_TITLE_HEIGHT = 3.2
 const SIGN_SUB_HEIGHT = 1.6
 const SIGN_BOTTOM_Y = 4
 const POST_HEIGHT = 5
-const POSITION = new THREE.Vector3(0, 0, 42)
-const HEADING = Math.PI // face north toward the world
+// Positioned just outside the intro-orbit radius (which is 16 around the
+// car at z=18). At z=37 the orbit camera sweeps right past it on the
+// south arc, putting "WELCOME TO MIND WORLD" in the establishing shot.
+// HEADING = 0 → sign face points back toward the orbit center (south
+// face of sign visible from the camera's south-arc positions).
+const POSITION = new THREE.Vector3(0, 0, 37)
+const HEADING = 0
 
 function makeSignTexture(line: string, opts: { size?: number; isTitle: boolean }): THREE.CanvasTexture {
   const w = 1024
