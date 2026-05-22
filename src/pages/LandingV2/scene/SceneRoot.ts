@@ -24,6 +24,7 @@ import { createPostFX, type PostFXHandle } from './PostFX'
 import { createBeacons } from './Beacons'
 import { createClouds } from './Clouds'
 import { createThoughtStream } from './ThoughtStream'
+import { createMotes } from './Motes'
 import { createEasterEggs, type EasterEggHandle } from './EasterEggs'
 import { createFireworks, type FireworksHandle } from './Fireworks'
 
@@ -408,6 +409,13 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
   const thoughtStream = createThoughtStream([...MONUMENTS, ...HIDDEN_DISTRICTS])
   scene.add(thoughtStream.points)
 
+  // ── Atmospheric motes (Loop 4 polish) ───────────────────────────────
+  // 80 slow-drifting bright dust motes in the lower air. Additive blend
+  // catches the sun direction → world feels "inside something" with
+  // light + mass, not on a flat plane.
+  const motes = createMotes()
+  scene.add(motes.points)
+
   // ── Walking NPCs in Agent Town (Wave 4 / D2 — vision § 3 D4) ────────
   // 6 low-poly biped agents loop simple waypoint paths around the Agent
   // Town plinth. They carry billboard speech bubbles that cycle between
@@ -727,6 +735,7 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
     beacons.update(time, carBuild.group.position)
     clouds.update(dt)
     thoughtStream.update(dt, time)
+    motes.update(dt, time)
 
     // Easter-egg per-frame pulses (Achilles chest glyph + Founder Stone
     // inlay shimmer). Fires regardless of proximity so the eggs read
@@ -1081,6 +1090,7 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
     beacons.dispose()
     clouds.dispose()
     thoughtStream.dispose()
+    motes.dispose()
     easterEggs.dispose()
     fireworks.dispose()
     npcs?.dispose()
