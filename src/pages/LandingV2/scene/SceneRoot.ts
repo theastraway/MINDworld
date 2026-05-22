@@ -599,6 +599,13 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
       dust.setBudget(LO_DUST_BUDGET)
       flames.setBudget(LO_FLAME_BUDGET)
       brandPoint.intensity = LO_BRAND_POINT_INTENSITY
+      // Lo-quality also hides peripheral atmosphere systems that can be
+      // dropped without breaking the core experience. Hide via .visible
+      // so we don't tear down + rebuild on hi→lo→hi flips.
+      motes.points.visible = false
+      birds.group.visible = false
+      shootingStars.points.visible = false
+      clouds.group.visible = false
     } else {
       sun.shadow.mapSize.set(HI_SHADOW_SIZE, HI_SHADOW_SIZE)
       if (sun.shadow.map) {
@@ -608,6 +615,11 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
       dust.setBudget(HI_DUST_BUDGET)
       flames.setBudget(HI_FLAME_BUDGET)
       brandPoint.intensity = HI_BRAND_POINT_INTENSITY
+      // Restore the peripheral atmosphere when FPS recovers.
+      motes.points.visible = true
+      birds.group.visible = true
+      shootingStars.points.visible = true
+      clouds.group.visible = true
     }
     // Mirror the LOD flip into PostFX — drops SSAO when lo, restores
     // when hi. Null-safe so direct-render fallback stays a no-op.
