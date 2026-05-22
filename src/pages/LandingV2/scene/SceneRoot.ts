@@ -30,6 +30,7 @@ import { createRoadPulses } from './RoadPulses'
 import { createBirds } from './Birds'
 import { createDistrictLabels } from './DistrictLabels'
 import { createDiscoveryBurst } from './DiscoveryBurst'
+import { createShootingStars } from './ShootingStars'
 import { createEasterEggs, type EasterEggHandle } from './EasterEggs'
 import { createFireworks, type FireworksHandle } from './Fireworks'
 
@@ -462,6 +463,13 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
   scene.add(discoveryBurst.points)
   const burstTriggerPos = new THREE.Vector3()
 
+  // ── Shooting stars (Loop 10 polish) ──────────────────────────────────
+  // Random 1.2s streaks across the upper sky every 20-40 seconds. Pure
+  // serendipity. Players who linger get rewarded with little moments —
+  // pairs with birds + motes to make lingering feel inhabited.
+  const shootingStars = createShootingStars()
+  scene.add(shootingStars.points)
+
   // ── Walking NPCs in Agent Town (Wave 4 / D2 — vision § 3 D4) ────────
   // 6 low-poly biped agents loop simple waypoint paths around the Agent
   // Town plinth. They carry billboard speech bubbles that cycle between
@@ -786,6 +794,7 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
     roadPulses.update(time)
     birds.update(time)
     discoveryBurst.update(dt)
+    shootingStars.update(dt)
 
     // Easter-egg per-frame pulses (Achilles chest glyph + Founder Stone
     // inlay shimmer). Fires regardless of proximity so the eggs read
@@ -1151,6 +1160,7 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
     birds.dispose()
     districtLabels.dispose()
     discoveryBurst.dispose()
+    shootingStars.dispose()
     easterEggs.dispose()
     fireworks.dispose()
     npcs?.dispose()
