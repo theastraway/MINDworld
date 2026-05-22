@@ -32,6 +32,7 @@ import { createDistrictLabels } from './DistrictLabels'
 import { createDiscoveryBurst } from './DiscoveryBurst'
 import { createShootingStars } from './ShootingStars'
 import { createStarfield } from './Starfield'
+import { createHornPulses, type HornPulseHandle } from './HornPulse'
 import { createEasterEggs, type EasterEggHandle } from './EasterEggs'
 import { createFireworks, type FireworksHandle } from './Fireworks'
 
@@ -132,6 +133,12 @@ export interface SceneHandle {
    * egg (vision § 13 egg 6). Plays the easter-egg sparkle SFX in tandem.
    */
   fireTowerFireworks: () => void
+  /**
+   * Visual ring pulse from the car's current position — paired with the
+   * procedural horn tone so honking has a visible effect. Player presses
+   * H → audio + visible shockwave.
+   */
+  fireHornPulse: () => void
   /**
    * GarageIntro orbit override (vision § 6 Beat 1 / Wave 3 C1). When
    * `angle` is a number, swap follow camera for fixed orbit around car
@@ -479,6 +486,12 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
   const starfield = createStarfield()
   scene.add(starfield.points)
 
+  // ── Horn shockwave pulses (Loop 17 polish) ───────────────────────────
+  // Visible radial ring expansion when H is pressed. Visual partner to
+  // the procedural horn tone — players see the world echo their honk.
+  const hornPulses: HornPulseHandle = createHornPulses()
+  scene.add(hornPulses.group)
+
   // ── Walking NPCs in Agent Town (Wave 4 / D2 — vision § 3 D4) ────────
   // 6 low-poly biped agents loop simple waypoint paths around the Agent
   // Town plinth. They carry billboard speech bubbles that cycle between
@@ -815,6 +828,7 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
       starfield.setOpacity(nightAmount)
       starfield.update(time)
     }
+    hornPulses.update(dt)
 
     // Easter-egg per-frame pulses (Achilles chest glyph + Founder Stone
     // inlay shimmer). Fires regardless of proximity so the eggs read
@@ -1123,6 +1137,12 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
     }
   }
 
+  // Horn pulse — visible shockwave from the car's current position.
+  // Paired with the procedural horn tone in the React shell.
+  const fireHornPulse = () => {
+    hornPulses.fire(carBuild.group.position.x, carBuild.group.position.z)
+  }
+
   // ── Narrative arc setters (vision § 6 / Wave 3 C1+C2) ───────────────────
   const setIntroCameraOrbit = (angle: number | null): void => {
     introOrbitAngle = angle
@@ -1194,6 +1214,7 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
     discoveryBurst.dispose()
     shootingStars.dispose()
     starfield.dispose()
+    hornPulses.dispose()
     easterEggs.dispose()
     fireworks.dispose()
     npcs?.dispose()
@@ -1218,6 +1239,7 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
     applyCarSkin,
     isLoQuality: () => loQuality,
     fireTowerFireworks,
+    fireHornPulse,
     setIntroCameraOrbit,
     setIntroMode,
     setSummit,

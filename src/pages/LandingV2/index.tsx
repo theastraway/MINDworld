@@ -350,6 +350,9 @@ export default function LandingV2() {
       },
       onHornDown: () => {
         sceneRef.current?.engine.setHorn(true)
+        // Visible shockwave ring from the car's current position — pairs
+        // with the procedural horn tone so honking has a visual effect.
+        sceneRef.current?.fireHornPulse()
       },
       onHornUp: () => {
         sceneRef.current?.engine.setHorn(false)
