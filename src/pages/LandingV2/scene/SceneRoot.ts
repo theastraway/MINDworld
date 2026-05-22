@@ -29,6 +29,7 @@ import { createWelcomeBillboard } from './Billboard'
 import { createRoadPulses } from './RoadPulses'
 import { createBirds } from './Birds'
 import { createDistrictLabels } from './DistrictLabels'
+import { createDiscoveryBurst } from './DiscoveryBurst'
 import { createEasterEggs, type EasterEggHandle } from './EasterEggs'
 import { createFireworks, type FireworksHandle } from './Fireworks'
 
@@ -452,6 +453,15 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
   const districtLabels = createDistrictLabels([...MONUMENTS, ...HIDDEN_DISTRICTS])
   scene.add(districtLabels.group)
 
+  // ── Discovery burst particles (Loop 9 polish) ────────────────────────
+  // Fires a confetti burst when a monument is discovered for the first
+  // time. Brand-red + district-color particles launched up + outward,
+  // gravity-pulled back down. Reinforces the moment of discovery with
+  // visual joy. Wired to the monument-trigger block below.
+  const discoveryBurst = createDiscoveryBurst()
+  scene.add(discoveryBurst.points)
+  const burstTriggerPos = new THREE.Vector3()
+
   // ── Walking NPCs in Agent Town (Wave 4 / D2 — vision § 3 D4) ────────
   // 6 low-poly biped agents loop simple waypoint paths around the Agent
   // Town plinth. They carry billboard speech bubbles that cycle between
@@ -775,6 +785,7 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
     welcomeBillboard.update(time)
     roadPulses.update(time)
     birds.update(time)
+    discoveryBurst.update(dt)
 
     // Easter-egg per-frame pulses (Achilles chest glyph + Founder Stone
     // inlay shimmer). Fires regardless of proximity so the eggs read
@@ -990,6 +1001,11 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
       if (trigger) {
         const monu = (trigger.userData as { monument: Monument }).monument
         triggeredMonuments.add(monu.key)
+        // Fire the discovery confetti at the monument's top (altitude 7
+        // is roughly the height of all monument geometries — labels sit
+        // at 9, so 7 puts the burst origin just below them).
+        burstTriggerPos.set(trigger.position.x, 7, trigger.position.z)
+        discoveryBurst.burst(burstTriggerPos, monu.color)
         callbacks.onMonumentEnter(monu)
       }
     }
@@ -1134,6 +1150,7 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
     roadPulses.dispose()
     birds.dispose()
     districtLabels.dispose()
+    discoveryBurst.dispose()
     easterEggs.dispose()
     fireworks.dispose()
     npcs?.dispose()
