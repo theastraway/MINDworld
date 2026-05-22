@@ -28,6 +28,7 @@ import { createMotes } from './Motes'
 import { createWelcomeBillboard } from './Billboard'
 import { createRoadPulses } from './RoadPulses'
 import { createBirds } from './Birds'
+import { createDistrictLabels } from './DistrictLabels'
 import { createEasterEggs, type EasterEggHandle } from './EasterEggs'
 import { createFireworks, type FireworksHandle } from './Fireworks'
 
@@ -441,6 +442,15 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
   // immersive pages always have "something flying in the periphery."
   const birds = createBirds()
   scene.add(birds.group)
+
+  // ── District name labels (Loop 8 polish) ─────────────────────────────
+  // Floating "MEMORY · GRAPH · MODELS · AGENTS · STUDIO · LIFE · API ·
+  // PATENTS" labels above each monument plinth. Visible from across the
+  // world via Sprite billboarding. Solves the "where do I go" problem —
+  // players can see and pick a destination from spawn rather than
+  // wandering blind. Hidden Sanctuary stays unlabeled by design.
+  const districtLabels = createDistrictLabels([...MONUMENTS, ...HIDDEN_DISTRICTS])
+  scene.add(districtLabels.group)
 
   // ── Walking NPCs in Agent Town (Wave 4 / D2 — vision § 3 D4) ────────
   // 6 low-poly biped agents loop simple waypoint paths around the Agent
@@ -1123,6 +1133,7 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
     welcomeBillboard.dispose()
     roadPulses.dispose()
     birds.dispose()
+    districtLabels.dispose()
     easterEggs.dispose()
     fireworks.dispose()
     npcs?.dispose()
