@@ -164,6 +164,33 @@ function createMindTower(loadingManager?: THREE.LoadingManager): THREE.Group {
   cap.castShadow = true
   group.add(cap)
 
+  // ── Aviation beacon spire ─────────────────────────────────────────────
+  // Thin metal antenna extending from the cap tip (y=78) up to y=90 with
+  // a brand-red emissive aviation warning light at the very top. The
+  // light pulses on a slow 1Hz cycle — reads as iconic urban architecture
+  // (every skyscraper has one). Bloom in PostFX catches the emissive peak.
+  const spireGeo = new THREE.CylinderGeometry(0.07, 0.12, 12, 6)
+  const spireMat = new THREE.MeshStandardMaterial({
+    color: 0x1a1a1a,
+    roughness: 0.45,
+    metalness: 0.7,
+  })
+  const spire = new THREE.Mesh(spireGeo, spireMat)
+  spire.position.y = 84 // midpoint of (78, 90)
+  spire.castShadow = true
+  group.add(spire)
+
+  // Beacon light at the very top — brand-red emissive sphere.
+  const beaconGeo = new THREE.SphereGeometry(0.42, 16, 12)
+  const beaconMat = new THREE.MeshStandardMaterial({
+    color: BRAND_RED,
+    emissive: BRAND_RED_EMISSIVE,
+    emissiveIntensity: 2.5,
+  })
+  const beaconLight = new THREE.Mesh(beaconGeo, beaconMat)
+  beaconLight.position.y = 90.5
+  group.add(beaconLight)
+
   // ── Energy rings — 3 brand-red emissive rings that travel up the tower
   // on a 4-second loop. Bloom in PostFX makes them read as light pulses
   // climbing the obelisk — like signal propagating through a column of
@@ -193,6 +220,7 @@ function createMindTower(loadingManager?: THREE.LoadingManager): THREE.Group {
   group.userData.animatedSides = animatedSides
   group.userData.capMaterial = capMat
   group.userData.energyRings = energyRings
+  group.userData.beaconMaterial = beaconMat
   return group
 }
 
@@ -421,6 +449,7 @@ export function createPlaza(loadingManager?: THREE.LoadingManager): PlazaBuild {
   const animatedSides = tower.userData.animatedSides as THREE.MeshStandardMaterial[]
   const capMaterial = tower.userData.capMaterial as THREE.MeshStandardMaterial
   const energyRings = (tower.userData.energyRings as THREE.Mesh[]) ?? []
+  const beaconMaterial = tower.userData.beaconMaterial as THREE.MeshStandardMaterial | undefined
   // Energy-ring climb: 4-second loop, ring travels y=2 → y=72 (tower
   // height) then fades + recycles. Three rings staggered by 1/3 cycle so
   // there's always one mid-climb.
@@ -456,6 +485,13 @@ export function createPlaza(loadingManager?: THREE.LoadingManager): PlazaBuild {
       mat.opacity = Math.sin(phase * Math.PI) * 0.85
       mat.emissiveIntensity = 1.4 + Math.sin(phase * Math.PI) * 0.8
     })
+
+    // Aviation beacon — slow 1 Hz pulse from dim (1.2) to hot (3.5).
+    // Standard top-of-skyscraper warning cadence; PostFX bloom carries it.
+    if (beaconMaterial) {
+      const beat = 0.5 + 0.5 * Math.sin(time * Math.PI * 2 * 1.0)
+      beaconMaterial.emissiveIntensity = 1.2 + beat * 2.3
+    }
 
     // Stats ring slow rotation (only when visible — saves a matrix update).
     if (statsRing.visible) {
