@@ -22,6 +22,7 @@ import { SKINS, applySkin, getCurrentSkin } from '../car/Skins'
 import { createEngine, type EngineHandle } from '../audio/Engine'
 import { createPostFX, type PostFXHandle } from './PostFX'
 import { createBeacons } from './Beacons'
+import { createClouds } from './Clouds'
 import { createEasterEggs, type EasterEggHandle } from './EasterEggs'
 import { createFireworks, type FireworksHandle } from './Fireworks'
 
@@ -253,7 +254,12 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
   // Camera looks at the car so the first frame already shows the
   // establishing shot (car + plaza + several districts in frame).
   const camera = new THREE.PerspectiveCamera(58, mount.clientWidth / mount.clientHeight, 0.1, 600)
-  camera.position.set(0, 5, 29)
+  // Match the GarageIntro orbit start pose (angle 0, radius 16, height 9
+  // around the car at z=18) so the very first frame composes the
+  // establishing shot — car right-of-center, plaza + tower receding
+  // northward — instead of fullbleeding the obelisk for the brief window
+  // before the React shell calls setIntroCameraOrbit(0).
+  camera.position.set(16, 9, 18)
   camera.lookAt(0, 1.5, 18)
 
   // ── Renderer ────────────────────────────────────────────
@@ -387,6 +393,12 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
   const beacons = createBeacons()
   beacons.onBeaconRead = (text: string) => callbacks.onBeaconRead?.(text)
   scene.add(beacons.group)
+
+  // ── Drifting cloud layer (Loop 1 polish) ──────────────────────────
+  // High-altitude soft cloud planes that drift on a slow wind. Reads as
+  // motion on the very first frame so the world doesn't feel static.
+  const clouds = createClouds()
+  scene.add(clouds.group)
 
   // ── Walking NPCs in Agent Town (Wave 4 / D2 — vision § 3 D4) ────────
   // 6 low-poly biped agents loop simple waypoint paths around the Agent
@@ -570,9 +582,15 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
   const todTargetHemiGround = new THREE.Color(startPal.hemiGround)
   const todTargetFog = new THREE.Color(startPal.fog)
   let todTargetSun = startPal.sunIntensity
-  const INTRO_ORBIT_RADIUS = 8
-  const INTRO_ORBIT_HEIGHT = 4
-  const INTRO_LOOK_TARGET = new THREE.Vector3(0, 1.5, 0)
+  // Orbit camera frames the car (parked at z=18 during intro) with enough
+  // pullback that the MIND Tower obelisk at origin reads as backdrop rather
+  // than fullbleed wall. Height lifted from 4 → 9 so the establishing shot
+  // shows the plaza disc + tower silhouette + several district plinths
+  // rather than a tight close-up of the car's hood.
+  const INTRO_ORBIT_RADIUS = 16
+  const INTRO_ORBIT_HEIGHT = 9
+  const INTRO_ORBIT_CENTER = new THREE.Vector3(0, 0, 18)
+  const INTRO_LOOK_TARGET = new THREE.Vector3(0, 1.5, 18)
   const SUMMIT_LOOK_TARGET = new THREE.Vector3(0, 6, 0)
   const SUMMIT_DRONE_HEIGHT = 60
   // Camera lerp factor toward the summit drone shot. ~0.012 per frame at
@@ -597,10 +615,17 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
     // never leaves the origin while the camera orbits.
     updateCar(carBuild, carState, input, dt)
     if (introMode) {
+      // Freeze the car at its spawn position (0, 0, 18) — NOT at world
+      // origin, because the 78-unit MIND Tower obelisk lives at origin
+      // and the orbit camera at radius < 20 would frame the tower wall
+      // instead of an establishing shot. Spawn z=18 puts the car south
+      // of the plaza ring (radius 16), so the orbit captures: car in
+      // foreground, plaza + tower receding north, districts on either
+      // side. Rotation π faces the car north toward the world.
       carState.velocity = 0
       carState.angularVelocity = 0
-      carBuild.group.position.set(0, 0, 0)
-      carBuild.group.rotation.set(0, 0, 0)
+      carBuild.group.position.set(0, 0, 18)
+      carBuild.group.rotation.set(0, Math.PI, 0)
     }
 
     // Dust spawns from rear wheels while moving
@@ -692,6 +717,7 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
     // car's world position each frame. onBeaconRead fires once per
     // beacon per session when it first reaches full opacity.
     beacons.update(time, carBuild.group.position)
+    clouds.update(dt)
 
     // Easter-egg per-frame pulses (Achilles chest glyph + Founder Stone
     // inlay shimmer). Fires regardless of proximity so the eggs read
@@ -835,12 +861,14 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
     } else if (introOrbitAngle !== null) {
       // ── GarageIntro orbit ──────────────────────────────────────────
       const a = introOrbitAngle
-      camera.fov = THREE.MathUtils.lerp(camera.fov, 56, 0.1)
+      camera.fov = THREE.MathUtils.lerp(camera.fov, 52, 0.1)
       camera.updateProjectionMatrix()
+      // Orbit AROUND the car's intro park position (z=18), not world origin.
+      // Otherwise the camera circles inside the MIND Tower's footprint.
       camera.position.set(
-        Math.cos(a) * INTRO_ORBIT_RADIUS,
+        INTRO_ORBIT_CENTER.x + Math.cos(a) * INTRO_ORBIT_RADIUS,
         INTRO_ORBIT_HEIGHT,
-        Math.sin(a) * INTRO_ORBIT_RADIUS,
+        INTRO_ORBIT_CENTER.z + Math.sin(a) * INTRO_ORBIT_RADIUS,
       )
       camera.lookAt(INTRO_LOOK_TARGET)
     } else {
@@ -1042,6 +1070,7 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
     engine.dispose()
     skids.dispose()
     beacons.dispose()
+    clouds.dispose()
     easterEggs.dispose()
     fireworks.dispose()
     npcs?.dispose()

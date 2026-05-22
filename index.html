@@ -35,12 +35,17 @@
     <meta name="twitter:description" content="Eight districts. Every capability. The first AI that remembers you." />
     <meta name="twitter:image" content="https://m-i-n-d.ai/landingv2/og-hero.jpg" />
 
-    <!-- Preload the four MIND letterforms used by the loader so the first
-         paint already has the brand visual instead of broken-image flicker. -->
-    <link rel="preload" as="image" href="/M.png" fetchpriority="high" />
-    <link rel="preload" as="image" href="/I.png" fetchpriority="high" />
-    <link rel="preload" as="image" href="/N.png" fetchpriority="high" />
-    <link rel="preload" as="image" href="/D.png" fetchpriority="high" />
+    <!-- Preload the four MIND letterforms — the loader shows them
+         immediately and the 3D plaza also samples them. Now ~80KB each
+         after the Wave-1 image diet, so eager preload is cheap. -->
+    <link rel="preload" as="image" href="/M.png" />
+    <link rel="preload" as="image" href="/I.png" />
+    <link rel="preload" as="image" href="/N.png" />
+    <link rel="preload" as="image" href="/D.png" />
+
+    <!-- Preconnect to the MIND backend so the live world-stats fetch
+         (fired the moment the 3D plaza mounts) skips the TLS handshake. -->
+    <link rel="preconnect" href="https://www.m-i-n-d.ai" />
 
     <style>
       /* Critical CSS so the loader background paints before Tailwind boots.
