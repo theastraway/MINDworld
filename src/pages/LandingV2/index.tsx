@@ -67,7 +67,24 @@ export default function LandingV2() {
   // from outside the animation loop. Updated by the same keydown/up
   // handlers that flip boostRef.
   const [boostActive, setBoostActive] = useState(false)
-  const [discovered, setDiscovered] = useState<Set<string>>(new Set())
+  // Discovery state persists across page reloads via localStorage so
+  // returning visitors see their progress preserved (visited labels stay
+  // greyed, summit condition fires correctly, idle hint skips known
+  // districts). Initializer reads once at mount; the persistence effect
+  // below writes on every change. Wrapped in try/catch — Safari private
+  // mode + storage-disabled browsers degrade to in-memory state silently.
+  const DISCOVERED_STORAGE_KEY = 'mind-world-discovered:v1'
+  const [discovered, setDiscovered] = useState<Set<string>>(() => {
+    try {
+      const raw = localStorage.getItem(DISCOVERED_STORAGE_KEY)
+      if (!raw) return new Set()
+      const arr = JSON.parse(raw) as unknown
+      if (!Array.isArray(arr)) return new Set()
+      return new Set(arr.filter((x): x is string => typeof x === 'string'))
+    } catch {
+      return new Set()
+    }
+  })
   const [webglError, setWebglError] = useState<string | null>(null)
   const [muted, setMuted] = useState(true)
 
@@ -108,6 +125,19 @@ export default function LandingV2() {
   })
 
   // Keep `reducedMotion` in sync if the user toggles their OS-level
+  // Persist discoveries on every change so reloads + returning visits
+  // restore progress. Stored as a JSON array of district keys.
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        DISCOVERED_STORAGE_KEY,
+        JSON.stringify(Array.from(discovered)),
+      )
+    } catch {
+      // Storage disabled (private mode, quota) — in-memory state still works.
+    }
+  }, [discovered])
+
   // preference while the page is open. Most users won't, but the spec
   // emits the change and respecting it is cheap.
   useEffect(() => {
@@ -536,6 +566,13 @@ export default function LandingV2() {
       return
     }
     sceneRef.current = scene
+
+    // Restore any districts the player discovered in a previous session —
+    // marks their labels visited + populates the persistent discovery set
+    // used by the idle hint so it doesn't suggest already-visited targets.
+    if (discovered.size > 0) {
+      scene.restoreDiscoveries(discovered)
+    }
 
     // ── Initial scene state sync (vision § 6 / Wave 3 C1+C2) ─────────
     // GarageIntro mounts BEFORE the scene exists (React renders the

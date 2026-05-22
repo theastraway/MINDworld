@@ -141,6 +141,13 @@ export interface SceneHandle {
    */
   fireHornPulse: () => void
   /**
+   * Restore previously-discovered districts (persisted in localStorage).
+   * Marks each label visited + populates the persistent discovered set
+   * used by the idle hint. Called once after scene boot from the React
+   * shell. Idempotent — safe to call with already-visited keys.
+   */
+  restoreDiscoveries: (districtKeys: ReadonlySet<string>) => void
+  /**
    * GarageIntro orbit override (vision § 6 Beat 1 / Wave 3 C1). When
    * `angle` is a number, swap follow camera for fixed orbit around car
    * (radius 8, height 4). When `null`, release back to follow camera.
@@ -1175,6 +1182,14 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
     hornPulses.fire(carBuild.group.position.x, carBuild.group.position.z)
   }
 
+  // Restore persisted discoveries — called once after scene boot.
+  const restoreDiscoveries = (districtKeys: ReadonlySet<string>) => {
+    districtKeys.forEach((key) => {
+      discoveredKeysPersistent.add(key)
+      districtLabels.markVisited(key)
+    })
+  }
+
   // ── Narrative arc setters (vision § 6 / Wave 3 C1+C2) ───────────────────
   const setIntroCameraOrbit = (angle: number | null): void => {
     introOrbitAngle = angle
@@ -1273,6 +1288,7 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
     isLoQuality: () => loQuality,
     fireTowerFireworks,
     fireHornPulse,
+    restoreDiscoveries,
     setIntroCameraOrbit,
     setIntroMode,
     setSummit,
