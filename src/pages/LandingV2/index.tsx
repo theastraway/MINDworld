@@ -597,7 +597,17 @@ export default function LandingV2() {
     if (mainDiscovered >= MONUMENTS.length) {
       setSummitReached(true)
       setActiveMonument(null)
-      sceneRef.current?.setSummit(true)
+      // Theatrical sequence: tower fireworks + sparkle SFX + summit
+      // fanfare in lockstep, then the drone camera lifts. The fireworks
+      // hit before the camera move so the player sees the world's
+      // climax from the follow-cam perspective before drifting up.
+      sceneRef.current?.fireTowerFireworks()
+      // Tiny stagger so the camera lifts 600ms AFTER the fireworks
+      // launch — gives the burst time to read before the perspective
+      // change.
+      window.setTimeout(() => {
+        sceneRef.current?.setSummit(true)
+      }, 600)
       sceneRef.current?.engine.playSummitFanfare()
     }
   }, [discovered, summitReached, mainKeys, reducedMotion])
