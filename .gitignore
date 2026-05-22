@@ -31,3 +31,6 @@ build
 
 # Vercel
 .vercel
+
+# tsc -b artifacts
+*.tsbuildinfo
