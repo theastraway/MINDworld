@@ -27,6 +27,7 @@ import { createThoughtStream } from './ThoughtStream'
 import { createMotes } from './Motes'
 import { createWelcomeBillboard } from './Billboard'
 import { createRoadPulses } from './RoadPulses'
+import { createBirds } from './Birds'
 import { createEasterEggs, type EasterEggHandle } from './EasterEggs'
 import { createFireworks, type FireworksHandle } from './Fireworks'
 
@@ -433,6 +434,14 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
   const roadPulses = createRoadPulses([...MONUMENTS, ...HIDDEN_DISTRICTS])
   scene.add(roadPulses.group)
 
+  // ── Soaring birds (Loop 7 polish) ────────────────────────────────────
+  // 5 tiny V-silhouettes lazy-orbiting at altitude 28-42. Wing flap on
+  // 0.7 Hz scale.y oscillation. Subtle, peripheral — tells the brain
+  // the world is real. Reference: Bruno Simon's portfolio + Apple
+  // immersive pages always have "something flying in the periphery."
+  const birds = createBirds()
+  scene.add(birds.group)
+
   // ── Walking NPCs in Agent Town (Wave 4 / D2 — vision § 3 D4) ────────
   // 6 low-poly biped agents loop simple waypoint paths around the Agent
   // Town plinth. They carry billboard speech bubbles that cycle between
@@ -755,6 +764,7 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
     motes.update(dt, time)
     welcomeBillboard.update(time)
     roadPulses.update(time)
+    birds.update(time)
 
     // Easter-egg per-frame pulses (Achilles chest glyph + Founder Stone
     // inlay shimmer). Fires regardless of proximity so the eggs read
@@ -1112,6 +1122,7 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
     motes.dispose()
     welcomeBillboard.dispose()
     roadPulses.dispose()
+    birds.dispose()
     easterEggs.dispose()
     fireworks.dispose()
     npcs?.dispose()
