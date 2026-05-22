@@ -103,7 +103,8 @@ ws.on('message', raw => {
   }
 })
 
-await send('Page.navigate', { url: 'http://localhost:4173/LandingV2' }, sessionId)
+const targetUrl = process.env.VERIFY_URL || 'http://localhost:4173/LandingV2'
+await send('Page.navigate', { url: targetUrl }, sessionId)
 await wait(8000)
 
 const evalExpr = expr => send('Runtime.evaluate', { expression: expr, returnByValue: true }, sessionId)

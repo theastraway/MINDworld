@@ -26,6 +26,7 @@
     "@types/react-dom": "^19.2.3",
     "@types/three": "^0.183.1",
     "@vitejs/plugin-react-swc": "^4.2.2",
+    "lighthouse": "^13.3.0",
     "tailwindcss": "^4.1.17",
     "typescript": "~5.9.3",
     "vite": "^7.2.6",
