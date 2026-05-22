@@ -105,6 +105,10 @@ export function Loader({ progress, dismissing = false, label = 'Loading MIND Wor
         {label}
       </div>
 
+      {/* Rotating tagline — short MIND value props that cycle every 3s
+          while loading. Educates first-time visitors during the wait. */}
+      <LoaderTagline mounted={mounted} reducedMotion={reducedMotion} />
+
       {/* Progress bar */}
       <div
         className="mt-6 sm:mt-8 h-[3px] w-[200px] sm:w-[260px] rounded-full overflow-hidden bg-white/8"
@@ -163,4 +167,37 @@ export function Loader({ progress, dismissing = false, label = 'Loading MIND Wor
  */
 export function LoaderShell() {
   return <Loader label="Loading MIND World..." progress={undefined} />
+}
+
+const TAGLINES = [
+  'Persistent memory for every AI.',
+  'Every conversation starts where the last one ended.',
+  'Cross-model context. Claude · GPT · Grok · Gemini.',
+  'Patents pending on the memory architecture.',
+  'Drag a doc. MIND remembers it forever.',
+  'Built solo. Shipped live.',
+]
+
+function LoaderTagline({ mounted, reducedMotion }: { mounted: boolean; reducedMotion: boolean }) {
+  const [idx, setIdx] = useState(() => Math.floor(Math.random() * TAGLINES.length))
+  useEffect(() => {
+    if (reducedMotion) return
+    const id = window.setInterval(() => {
+      setIdx((i) => (i + 1) % TAGLINES.length)
+    }, 3200)
+    return () => window.clearInterval(id)
+  }, [reducedMotion])
+  return (
+    <div
+      className="mt-3 text-[11px] sm:text-xs text-white/55 italic max-w-[280px] sm:max-w-[340px] text-center"
+      style={{
+        opacity: mounted ? 1 : 0,
+        transition: reducedMotion ? 'none' : 'opacity 700ms ease-out 1400ms',
+        minHeight: '1.6em',
+      }}
+      key={idx}
+    >
+      {TAGLINES[idx]}
+    </div>
+  )
 }
