@@ -33,6 +33,7 @@ import { createDiscoveryBurst } from './DiscoveryBurst'
 import { createShootingStars } from './ShootingStars'
 import { createStarfield } from './Starfield'
 import { createHornPulses, type HornPulseHandle } from './HornPulse'
+import { createIdleHint } from './IdleHint'
 import { createEasterEggs, type EasterEggHandle } from './EasterEggs'
 import { createFireworks, type FireworksHandle } from './Fireworks'
 
@@ -492,6 +493,14 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
   const hornPulses: HornPulseHandle = createHornPulses()
   scene.add(hornPulses.group)
 
+  // ── Idle hint arrow (Loop 19 polish) ─────────────────────────────────
+  // Brand-red arrow above the car that points at the nearest undiscovered
+  // district. Surfaces only after 5s of stationary — non-intrusive, helps
+  // lost players without cluttering normal play.
+  const idleHint = createIdleHint()
+  scene.add(idleHint.group)
+  const allDistrictsForHint = [...MONUMENTS, ...HIDDEN_DISTRICTS]
+
   // ── Walking NPCs in Agent Town (Wave 4 / D2 — vision § 3 D4) ────────
   // 6 low-poly biped agents loop simple waypoint paths around the Agent
   // Town plinth. They carry billboard speech bubbles that cycle between
@@ -615,6 +624,9 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
   const sanctuaryLightColorScratch = new THREE.Color()
   let frameId = 0
   const triggeredMonuments = new Set<string>()
+  // Persistent set of "ever discovered" district keys — never clears, used
+  // by IdleHint to skip districts the player has already visited.
+  const discoveredKeysPersistent = new Set<string>()
   const dustClock = { t: 0 }
   const skidClock = { t: 0 }
   const sparkClock = { t: 0 }
@@ -829,6 +841,13 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
       starfield.update(time)
     }
     hornPulses.update(dt)
+    idleHint.update(
+      dt,
+      carState.velocity,
+      carBuild.group.position,
+      discoveredKeysPersistent,
+      allDistrictsForHint,
+    )
 
     // Easter-egg per-frame pulses (Achilles chest glyph + Founder Stone
     // inlay shimmer). Fires regardless of proximity so the eggs read
@@ -1055,6 +1074,7 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
       if (trigger) {
         const monu = (trigger.userData as { monument: Monument }).monument
         triggeredMonuments.add(monu.key)
+        discoveredKeysPersistent.add(monu.key)
         // Fire the discovery confetti at the monument's top (altitude 7
         // is roughly the height of all monument geometries — labels sit
         // at 9, so 7 puts the burst origin just below them).
@@ -1215,6 +1235,7 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
     shootingStars.dispose()
     starfield.dispose()
     hornPulses.dispose()
+    idleHint.dispose()
     easterEggs.dispose()
     fireworks.dispose()
     npcs?.dispose()
