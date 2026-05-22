@@ -25,6 +25,7 @@ import { createBeacons } from './Beacons'
 import { createClouds } from './Clouds'
 import { createThoughtStream } from './ThoughtStream'
 import { createMotes } from './Motes'
+import { createWelcomeBillboard } from './Billboard'
 import { createEasterEggs, type EasterEggHandle } from './EasterEggs'
 import { createFireworks, type FireworksHandle } from './Fireworks'
 
@@ -416,6 +417,13 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
   const motes = createMotes()
   scene.add(motes.points)
 
+  // ── Welcome billboard (Loop 5 polish) ───────────────────────────────
+  // Freestanding 3D sign south of the plaza. Players see it the moment
+  // they start driving — "WELCOME TO MIND WORLD · Drive · WASD · Discover".
+  // Brand-red emissive accent on top edge → bloom-friendly hot line.
+  const welcomeBillboard = createWelcomeBillboard()
+  scene.add(welcomeBillboard.group)
+
   // ── Walking NPCs in Agent Town (Wave 4 / D2 — vision § 3 D4) ────────
   // 6 low-poly biped agents loop simple waypoint paths around the Agent
   // Town plinth. They carry billboard speech bubbles that cycle between
@@ -736,6 +744,7 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
     clouds.update(dt)
     thoughtStream.update(dt, time)
     motes.update(dt, time)
+    welcomeBillboard.update(time)
 
     // Easter-egg per-frame pulses (Achilles chest glyph + Founder Stone
     // inlay shimmer). Fires regardless of proximity so the eggs read
@@ -1091,6 +1100,7 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
     clouds.dispose()
     thoughtStream.dispose()
     motes.dispose()
+    welcomeBillboard.dispose()
     easterEggs.dispose()
     fireworks.dispose()
     npcs?.dispose()
