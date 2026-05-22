@@ -408,22 +408,25 @@ export function GarageIntro({
         <div className="max-w-md text-center pointer-events-auto">
           <h1
             id={titleId}
-            className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#F8ECDC] drop-shadow-[0_4px_18px_rgba(0,0,0,0.6)]"
+            className="text-4xl sm:text-5xl font-extrabold tracking-tight text-[#F8ECDC] drop-shadow-[0_4px_18px_rgba(0,0,0,0.7)]"
           >
-            Drive your <span className="text-[#F43F3F]">MIND</span>.
+            Drive the <span className="text-[#F43F3F]">MIND</span>.
           </h1>
-          <p className="text-sm sm:text-base text-[#F8ECDC]/90 mt-3 leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
-            Eight monuments. Every capability.
+          <p className="text-sm sm:text-base text-[#F8ECDC]/90 mt-3 leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)] uppercase tracking-[0.18em]">
+            Persistent memory for every AI.
+          </p>
+          <p className="text-[11px] text-[#F8ECDC]/65 mt-2 tracking-[0.22em] uppercase">
+            WASD · Shift · Space · H · T · P
           </p>
           <button
             type="button"
             onClick={handleStart}
             onMouseEnter={onCtaHover}
             disabled={!buttonReady}
-            aria-label="Start driving the MIND world"
-            className="mt-6 inline-flex items-center gap-2 bg-[#F43F3F] hover:bg-[#F43F3F]/90 disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-bold px-6 py-3 rounded-full transition-colors uppercase tracking-wider justify-center shadow-[0_4px_24px_rgba(244,63,63,0.45)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFCC4D] focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+            aria-label="Enter the MIND World"
+            className="mt-7 inline-flex items-center gap-2 bg-[#F43F3F] hover:bg-[#F43F3F]/90 disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-bold px-7 py-3.5 rounded-full transition-colors uppercase tracking-wider justify-center shadow-[0_4px_30px_rgba(244,63,63,0.55)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFCC4D] focus-visible:ring-offset-2 focus-visible:ring-offset-black"
           >
-            Start driving <ArrowRight className="size-4" aria-hidden="true" />
+            Enter the world <ArrowRight className="size-4" aria-hidden="true" />
           </button>
         </div>
       </div>
