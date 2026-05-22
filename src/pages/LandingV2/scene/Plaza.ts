@@ -164,9 +164,35 @@ function createMindTower(loadingManager?: THREE.LoadingManager): THREE.Group {
   cap.castShadow = true
   group.add(cap)
 
+  // ── Energy rings — 3 brand-red emissive rings that travel up the tower
+  // on a 4-second loop. Bloom in PostFX makes them read as light pulses
+  // climbing the obelisk — like signal propagating through a column of
+  // memory. Position is animated by the Plaza update() loop below.
+  const ringGeo = new THREE.TorusGeometry(7.5, 0.18, 6, 32)
+  const ringMat = new THREE.MeshStandardMaterial({
+    color: BRAND_RED,
+    emissive: BRAND_RED_EMISSIVE,
+    emissiveIntensity: 1.8,
+    transparent: true,
+    opacity: 0.85,
+    roughness: 0.4,
+    metalness: 0.3,
+  })
+  const energyRings: THREE.Mesh[] = []
+  for (let i = 0; i < 3; i++) {
+    const ring = new THREE.Mesh(ringGeo, ringMat)
+    ring.rotation.x = Math.PI / 2 // horizontal
+    // Stagger initial y so the three pulses are evenly spaced through
+    // the climb cycle. update() reassigns each frame.
+    ring.position.y = 6 + i * 22
+    group.add(ring)
+    energyRings.push(ring)
+  }
+
   group.userData.animatedFronts = animatedFronts
   group.userData.animatedSides = animatedSides
   group.userData.capMaterial = capMat
+  group.userData.energyRings = energyRings
   return group
 }
 
@@ -394,6 +420,13 @@ export function createPlaza(loadingManager?: THREE.LoadingManager): PlazaBuild {
   const animatedFronts = tower.userData.animatedFronts as THREE.MeshStandardMaterial[]
   const animatedSides = tower.userData.animatedSides as THREE.MeshStandardMaterial[]
   const capMaterial = tower.userData.capMaterial as THREE.MeshStandardMaterial
+  const energyRings = (tower.userData.energyRings as THREE.Mesh[]) ?? []
+  // Energy-ring climb: 4-second loop, ring travels y=2 → y=72 (tower
+  // height) then fades + recycles. Three rings staggered by 1/3 cycle so
+  // there's always one mid-climb.
+  const RING_CYCLE = 4
+  const RING_Y_START = 2
+  const RING_Y_END = 72
 
   const update = (time: number, camera: THREE.Camera, summit: boolean = false): void => {
     // Beam pulse — base opacity responds to summit flag.
@@ -410,6 +443,19 @@ export function createPlaza(loadingManager?: THREE.LoadingManager): PlazaBuild {
       m.emissiveIntensity = 0.35 + pulse * 0.5
     })
     capMaterial.emissiveIntensity = 0.9 + pulse * 0.6
+
+    // Energy rings climb the tower on staggered phases. Fade out near
+    // the top so the disappearance reads as the pulse dissolving into
+    // the cap, not popping out of frame.
+    energyRings.forEach((ring, i) => {
+      const phase = ((time / RING_CYCLE) + i / energyRings.length) % 1
+      const y = RING_Y_START + phase * (RING_Y_END - RING_Y_START)
+      ring.position.y = y
+      const mat = ring.material as THREE.MeshStandardMaterial
+      // Opacity: rises quickly at the bottom, peaks mid-climb, fades at top.
+      mat.opacity = Math.sin(phase * Math.PI) * 0.85
+      mat.emissiveIntensity = 1.4 + Math.sin(phase * Math.PI) * 0.8
+    })
 
     // Stats ring slow rotation (only when visible — saves a matrix update).
     if (statsRing.visible) {

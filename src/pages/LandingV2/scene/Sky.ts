@@ -82,12 +82,33 @@ export function createSky(initial: TimeOfDay = DEFAULT_PHASE): SkyHandle {
       uniform vec3 midColor;
       uniform vec3 bottomColor;
       varying vec3 vWorldPosition;
+
+      // Sun disk anchored low-NW — same direction as the DirectionalLight
+      // sun in SceneRoot.ts (position (-30, 50, 20) → normalized direction).
+      // The disk is a soft cream blob in dawn/dusk, bright white at day,
+      // a moon-blue glow at night. Bloom in PostFX catches the emissive
+      // peak and makes it feel like a real horizon star.
       void main() {
-        float h = normalize(vWorldPosition).y;
+        vec3 dir = normalize(vWorldPosition);
+        float h = dir.y;
+
+        // Base sky gradient (unchanged behavior)
         float t1 = smoothstep(-0.1, 0.4, h);
         float t2 = smoothstep(0.3, 0.95, h);
         vec3 col = mix(bottomColor, midColor, t1);
         col = mix(col, topColor, t2);
+
+        // Sun: dot product against the sun direction, sharpen with a power
+        // curve so the disk has a hot core + soft halo.
+        vec3 sunDir = normalize(vec3(-0.5, 0.78, 0.36));
+        float sunDot = max(0.0, dot(dir, sunDir));
+        float sunCore = pow(sunDot, 220.0); // hot core
+        float sunHalo = pow(sunDot, 18.0) * 0.45; // soft surrounding glow
+        // Tint the sun toward the warm side of the palette — picks up the
+        // current time-of-day flavor automatically by mixing midColor.
+        vec3 sunTint = mix(vec3(1.0, 0.95, 0.85), midColor, 0.35);
+        col += sunTint * (sunCore * 1.4 + sunHalo);
+
         gl_FragColor = vec4(col, 1.0);
       }
     `,
