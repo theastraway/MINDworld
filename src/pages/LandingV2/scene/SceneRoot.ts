@@ -31,6 +31,7 @@ import { createBirds } from './Birds'
 import { createDistrictLabels } from './DistrictLabels'
 import { createDiscoveryBurst } from './DiscoveryBurst'
 import { createShootingStars } from './ShootingStars'
+import { createStarfield } from './Starfield'
 import { createEasterEggs, type EasterEggHandle } from './EasterEggs'
 import { createFireworks, type FireworksHandle } from './Fireworks'
 
@@ -470,6 +471,14 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
   const shootingStars = createShootingStars()
   scene.add(shootingStars.points)
 
+  // ── Procedural starfield (Loop 11 polish) ────────────────────────────
+  // 240 tiny stars on a celestial sphere. Opacity is driven by the
+  // current time-of-day phase — 1.0 at night, 0 at day, lerped across
+  // dawn/dusk. Wired in the tick loop below where todCurrent / todTarget
+  // / todProgress are visible.
+  const starfield = createStarfield()
+  scene.add(starfield.points)
+
   // ── Walking NPCs in Agent Town (Wave 4 / D2 — vision § 3 D4) ────────
   // 6 low-poly biped agents loop simple waypoint paths around the Agent
   // Town plinth. They carry billboard speech bubbles that cycle between
@@ -795,6 +804,17 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
     birds.update(time)
     discoveryBurst.update(dt)
     shootingStars.update(dt)
+    // Starfield opacity tracks the night phase of the time-of-day cycle.
+    // todCurrent/todTarget swap when setTimeOfDay() is called; todProgress
+    // marches 0→1 over TOD_TRANSITION_SEC. Compute "nightness" as a soft
+    // blend: starts from current's nightness, lerps to target's nightness.
+    {
+      const nightFrom = todCurrent === 'night' ? 1 : 0
+      const nightTo = todTarget === 'night' ? 1 : 0
+      const nightAmount = nightFrom + (nightTo - nightFrom) * todProgress
+      starfield.setOpacity(nightAmount)
+      starfield.update(time)
+    }
 
     // Easter-egg per-frame pulses (Achilles chest glyph + Founder Stone
     // inlay shimmer). Fires regardless of proximity so the eggs read
@@ -1161,6 +1181,7 @@ export function createScene({ mount, getInput, callbacks }: SceneOptions): Scene
     districtLabels.dispose()
     discoveryBurst.dispose()
     shootingStars.dispose()
+    starfield.dispose()
     easterEggs.dispose()
     fireworks.dispose()
     npcs?.dispose()
