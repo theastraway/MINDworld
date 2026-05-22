@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <title>Drive the MIND — the persistent memory layer for AI</title>
+    <meta
+      name="description"
+      content="Eight districts. Every capability. The first AI that remembers you. Drive the MIND World at m-i-n-d.ai/LandingV2."
+    />
+    <link rel="canonical" href="https://m-i-n-d.ai/LandingV2" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="theme-color" content="#F43F3F" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/favicon.png" />
+
+    <!-- Open Graph (mirrored by Helmet on mount; static copy ensures first-paint SEO) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="MIND" />
+    <meta property="og:title" content="Drive the MIND — the persistent memory layer for AI" />
+    <meta property="og:description" content="Eight districts. Every capability. The first AI that remembers you." />
+    <meta property="og:url" content="https://m-i-n-d.ai/LandingV2" />
+    <meta property="og:image" content="https://m-i-n-d.ai/landingv2/og-hero.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Drive the MIND — the persistent memory layer for AI" />
+    <meta name="twitter:description" content="Eight districts. Every capability. The first AI that remembers you." />
+    <meta name="twitter:image" content="https://m-i-n-d.ai/landingv2/og-hero.jpg" />
+
+    <!-- Preload the four MIND letterforms used by the loader so the first
+         paint already has the brand visual instead of broken-image flicker. -->
+    <link rel="preload" as="image" href="/M.png" fetchpriority="high" />
+    <link rel="preload" as="image" href="/I.png" fetchpriority="high" />
+    <link rel="preload" as="image" href="/N.png" fetchpriority="high" />
+    <link rel="preload" as="image" href="/D.png" fetchpriority="high" />
+
+    <style>
+      /* Critical CSS so the loader background paints before Tailwind boots.
+         Matches the Loader gradient (#1a1418 → #2a1f25). */
+      html, body { background: #1a1418; }
+      #root { min-height: 100vh; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
