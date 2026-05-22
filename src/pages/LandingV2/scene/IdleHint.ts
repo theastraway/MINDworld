@@ -70,18 +70,38 @@ export function createIdleHint(): IdleHintHandle {
       idleSec = 0
     }
 
-    // Find the nearest undiscovered (non-hidden) district.
+    // Find the nearest undiscovered district. PRIORITY: non-hidden first.
+    // If all 8 mains are done, fall back to the hidden Sanctuary so the
+    // hint reveals there's still more to find. Players who completed
+    // exploration get a nudge toward the last secret without being told
+    // outright where it is — the arrow direction is the only clue.
     let nearest: District | null = null
     let nearestDist = Infinity
+    let allMainsDone = true
+
     for (const d of districts) {
       if (d.hidden) continue
-      if (visited.has(d.key)) continue
-      const dx = d.position[0] - carPos.x
-      const dz = d.position[1] - carPos.z
-      const dist = Math.hypot(dx, dz)
-      if (dist < nearestDist) {
-        nearestDist = dist
+      if (!visited.has(d.key)) {
+        allMainsDone = false
+        const dx = d.position[0] - carPos.x
+        const dz = d.position[1] - carPos.z
+        const dist = Math.hypot(dx, dz)
+        if (dist < nearestDist) {
+          nearestDist = dist
+          nearest = d
+        }
+      }
+    }
+
+    // Fallback: all mains done → point at the hidden Sanctuary if it
+    // exists and the player hasn't found it yet. The hint is the only
+    // diegetic clue we give about the 9th district's existence.
+    if (allMainsDone && !nearest) {
+      for (const d of districts) {
+        if (!d.hidden) continue
+        if (visited.has(d.key)) continue
         nearest = d
+        break
       }
     }
 
